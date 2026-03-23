@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Visitor Register ✨</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a1a;
+      --card: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.1);
+      --accent1: #ff6b6b;
+      --accent2: #ffd93d;
+      --accent3: #6bcbff;
+      --accent4: #a29bfe;
+      --text: #f0f0ff;
+      --subtext: rgba(240,240,255,0.55);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Animated gradient background ── */
+    .bg-gradient {
+      position: fixed; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse 80% 60% at 20% 30%, rgba(162,155,254,0.18) 0%, transparent 60%),
+                  radial-gradient(ellipse 70% 50% at 80% 70%, rgba(107,203,255,0.15) 0%, transparent 60%),
+                  radial-gradient(ellipse 60% 80% at 50% 50%, rgba(255,107,107,0.08) 0%, transparent 70%),
+                  #0a0a1a;
+      animation: bgShift 12s ease-in-out infinite alternate;
+    }
+    @keyframes bgShift {
+      0%   { filter: hue-rotate(0deg); }
+      100% { filter: hue-rotate(30deg); }
+    }
+
+    /* ── Floating orbs ── */
+    .orbs { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(60px); opacity: 0.25; animation: orbFloat linear infinite;
+    }
+    .orb1 { width:350px; height:350px; background:var(--accent4); top:-80px; left:-80px; animation-duration:18s; }
+    .orb2 { width:280px; height:280px; background:var(--accent3); bottom:-60px; right:-60px; animation-duration:22s; animation-delay:-8s; }
+    .orb3 { width:200px; height:200px; background:var(--accent1); top:40%; left:60%; animation-duration:15s; animation-delay:-4s; }
+    .orb4 { width:160px; height:160px; background:var(--accent2); top:60%; left:10%; animation-duration:20s; animation-delay:-12s; }
+    @keyframes orbFloat {
+      0%,100% { transform: translateY(0) scale(1); }
+      33%      { transform: translateY(-40px) scale(1.05); }
+      66%      { transform: translateY(25px) scale(0.95); }
+    }
+
+    /* ── Star particles ── */
+    .stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .star {
+      position: absolute; width:2px; height:2px; background:#fff;
+      border-radius: 50%; animation: twinkle ease-in-out infinite;
+    }
+    @keyframes twinkle {
+      0%,100% { opacity:0.1; transform:scale(1); }
+      50%      { opacity:0.8; transform:scale(1.4); }
+    }
+
+    /* ── Layout ── */
+    .container {
+      position: relative; z-index: 1;
+      max-width: 860px; margin: 0 auto;
+      padding: 60px 20px 100px;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center; margin-bottom: 60px;
+      animation: fadeDown 0.9s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes fadeDown {
+      from { opacity:0; transform:translateY(-30px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent4), var(--accent3));
+      color: #fff; font-size: 11px; font-weight: 500; letter-spacing: 3px;
+      text-transform: uppercase; padding: 6px 18px; border-radius: 100px;
+      margin-bottom: 22px;
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 7vw, 4.2rem);
+      font-weight: 900; line-height: 1.1;
+      background: linear-gradient(135deg, #fff 0%, var(--accent4) 50%, var(--accent3) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 14px;
+    }
+    .subtitle {
+      color: var(--subtext); font-size: 1.05rem; font-weight: 300;
+      max-width: 480px; margin: 0 auto;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(20px);
+      padding: 40px;
+      margin-bottom: 36px;
+      animation: fadeUp 0.9s cubic-bezier(.22,1,.36,1) 0.2s both;
+      transition: box-shadow 0.4s;
+    }
+    .card:hover { box-shadow: 0 0 40px rgba(162,155,254,0.15); }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(30px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 700;
+      margin-bottom: 24px; color: #fff;
+    }
+    .card-title span { color: var(--accent4); }
+
+    /* ── Input ── */
+    .input-wrap {
+      display: flex; gap: 14px; flex-wrap: wrap;
+    }
+    input[type="text"] {
+      flex: 1; min-width: 200px;
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 14px; color: #fff;
+      font-family: 'DM Sans', sans-serif; font-size: 1rem;
+      padding: 16px 20px; outline: none;
+      transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+    }
+    input[type="text"]::placeholder { color: var(--subtext); }
+    input[type="text"]:focus {
+      border-color: var(--accent4);
+      background: rgba(162,155,254,0.08);
+      box-shadow: 0 0 0 4px rgba(162,155,254,0.12);
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--accent4), var(--accent3));
+      color: #fff; border: none; border-radius: 14px;
+      font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500;
+      padding: 16px 32px; cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+    button:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(162,155,254,0.35); }
+    button:active { transform: translateY(0); }
+    button .btn-shine {
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.25) 50%, transparent 60%);
+      transform: translateX(-100%);
+      transition: transform 0.5s;
+    }
+    button:hover .btn-shine { transform: translateX(100%); }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: linear-gradient(135deg, var(--accent4), var(--accent3));
+      color: #fff; font-size: 0.95rem; font-weight: 500;
+      padding: 14px 28px; border-radius: 100px;
+      box-shadow: 0 8px 30px rgba(162,155,254,0.4);
+      z-index: 100; transition: transform 0.5s cubic-bezier(.22,1,.36,1), opacity 0.5s;
+      opacity: 0; pointer-events: none;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    #toast.error { background: linear-gradient(135deg, var(--accent1), #ff9f43); }
+
+    /* ── Visitors table ── */
+    .visitors-card { animation-delay: 0.35s; }
+    .visitors-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 22px; flex-wrap: wrap; gap: 10px;
+    }
+    .count-badge {
+      background: rgba(162,155,254,0.15);
+      border: 1px solid rgba(162,155,254,0.3);
+      border-radius: 100px; font-size: 0.8rem;
+      color: var(--accent4); padding: 4px 14px;
+    }
+    .refresh-btn {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--subtext); font-size: 0.85rem;
+      padding: 8px 18px; border-radius: 100px;
+      box-shadow: none;
+    }
+    .refresh-btn:hover { border-color: var(--accent4); color: var(--accent4); transform: none; box-shadow: none; }
+
+    .visitor-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .visitor-item {
+      display: flex; align-items: center; gap: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 14px 18px;
+      animation: slideIn 0.4s cubic-bezier(.22,1,.36,1) both;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .visitor-item:hover { background: rgba(162,155,254,0.07); border-color: rgba(162,155,254,0.2); }
+    @keyframes slideIn {
+      from { opacity:0; transform:translateX(-16px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+
+    .avatar {
+      width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 1rem; color: #fff;
+    }
+    .visitor-name { font-weight: 500; font-size: 1rem; }
+    .visitor-time { font-size: 0.78rem; color: var(--subtext); margin-top: 2px; }
+    .visitor-number {
+      margin-left: auto; font-size: 0.75rem;
+      color: var(--subtext); font-weight: 300;
+    }
+
+    .empty-state {
+      text-align: center; padding: 40px 20px;
+      color: var(--subtext); font-size: 0.95rem;
+    }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+    .spinner {
+      width: 28px; height: 28px; border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent4); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 20px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center; color: var(--subtext); font-size: 0.8rem;
+      margin-top: 60px; animation: fadeUp 0.9s 0.5s both;
+    }
+    footer span { color: var(--accent4); }
+
+    @media (max-width: 520px) {
+      .card { padding: 24px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-gradient"></div>
+<div class="orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+</div>
+<div class="stars" id="stars"></div>
+
+<div class="container">
+  <header>
+    <div class="badge">✦ Welcome Register ✦</div>
+    <h1>Sign Your Name<br>to the Universe</h1>
+    <p class="subtitle">Enter your name below and join the ever-growing list of amazing visitors from around the world.</p>
+  </header>
+
+  <!-- Submit card -->
+  <div class="card">
+    <div class="card-title">✍️ Register <span>Yourself</span></div>
+    <div class="input-wrap">
+      <input type="text" id="nameInput" placeholder="Enter your name..." maxlength="80" autocomplete="off"/>
+      <button onclick="submitName()">
+        <span class="btn-shine"></span>
+        Add Me ✨
+      </button>
+    </div>
+  </div>
+
+  <!-- Visitors card -->
+  <div class="card visitors-card">
+    <div class="visitors-header">
+      <div class="card-title" style="margin-bottom:0">👥 All <span>Visitors</span></div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="count-badge" id="countBadge">0 visitors</span>
+        <button class="refresh-btn" onclick="loadVisitors()">↻ Refresh</button>
+      </div>
+    </div>
+    <div class="visitor-list" id="visitorList">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <footer>
+    Built with <span>Flask + DynamoDB + Terraform</span> · AWS Free Tier ☁️
+  </footer>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // ── Generate stars ──
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 90; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      animation-duration:${2+Math.random()*4}s;
+      animation-delay:${Math.random()*5}s;
+      width:${Math.random()<0.2?3:2}px;
+      height:${Math.random()<0.2?3:2}px;
+      opacity:${0.1+Math.random()*0.3};
+    `;
+    starsEl.appendChild(s);
+  }
+
+  // ── Avatar colors ──
+  const COLORS = [
+    'linear-gradient(135deg,#a29bfe,#6bcbff)',
+    'linear-gradient(135deg,#ff6b6b,#ffd93d)',
+    'linear-gradient(135deg,#55efc4,#00b894)',
+    'linear-gradient(135deg,#fd79a8,#e84393)',
+    'linear-gradient(135deg,#fdcb6e,#e17055)',
+    'linear-gradient(135deg,#74b9ff,#0984e3)',
+  ];
+
+  function getColor(str) {
+    let h = 0;
+    for (let c of str) h = (h * 31 + c.charCodeAt(0)) & 0xffffff;
+    return COLORS[h % COLORS.length];
+  }
+
+  function timeAgo(iso) {
+    const diff = (Date.now() - new Date(iso + 'Z').getTime()) / 1000;
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+    return `${Math.floor(diff/86400)}d ago`;
+  }
+
+  function showToast(msg, isError=false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show' + (isError ? ' error' : '');
+    setTimeout(() => t.className = '', 3200);
+  }
+
+  async function submitName() {
+    const input = document.getElementById('nameInput');
+    const name = input.value.trim();
+    if (!name) { showToast('Please enter your name!', true); return; }
+
+    try {
+      const r = await fetch('/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      const d = await r.json();
+      if (r.ok) {
+        showToast('🎉 ' + d.message);
+        input.value = '';
+        loadVisitors();
+      } else {
+        showToast(d.error || 'Something went wrong', true);
+      }
+    } catch { showToast('Network error!', true); }
+  }
+
+  async function loadVisitors() {
+    const list = document.getElementById('visitorList');
+    list.innerHTML = '<div class="spinner"></div>';
+    try {
+      const r = await fetch('/visitors');
+      const items = await r.json();
+      document.getElementById('countBadge').textContent =
+        items.length + (items.length === 1 ? ' visitor' : ' visitors');
+
+      if (!items.length) {
+        list.innerHTML = '<div class="empty-state"><div class="icon">🌌</div>No visitors yet — be the first!</div>';
+        return;
+      }
+      list.innerHTML = '';
+      items.forEach((v, i) => {
+        const initials = v.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const el = document.createElement('div');
+        el.className = 'visitor-item';
+        el.style.animationDelay = `${i*0.05}s`;
+        el.innerHTML = `
+          <div class="avatar" style="background:${getColor(v.name)}">${initials}</div>
+          <div>
+            <div class="visitor-name">${v.name}</div>
+            <div class="visitor-time">🕐 ${timeAgo(v.timestamp)}</div>
+          </div>
+          <div class="visitor-number">#${items.length - i}</div>
+        `;
+        list.appendChild(el);
+      });
+    } catch {
+      list.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div>Could not load visitors.</div>';
+    }
+  }
+
+  // Enter key support
+  document.getElementById('nameInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitName();
+  });
+
+  // Initial load
+  loadVisitors();
+</script>
+</body>
+</html>
